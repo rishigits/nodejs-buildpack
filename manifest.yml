@@ -23,4 +23,4 @@ dependencies:
   uri: file:///home/rishi/CloudFoundry/buildpacks/ibm-node-s390x-6.2.2.tar.gz
   md5: 6c9a8c87539736a675572e3125007f98
   cf_stacks:
-  - lucid64
+  - cedar-14
