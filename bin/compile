@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir> <env-dir>
 
-set -e
-set -o pipefail   # dont ignore exit codes when piping output
+### Configure environment
+
+set -o errexit    # always exit on error
+set -o pipefail   # don't ignore exit codes when piping output
 set -o nounset    # fail on unset variables
 unset GIT_DIR     # Avoid GIT_DIR leak from previous build steps
 
@@ -21,10 +23,6 @@ mkdir -p "$BUILD_DIR/.heroku/node/"
 cd $BUILD_DIR
 export PATH="$BUILD_DIR/.heroku/node/bin":$PATH
 
-# CF Common
-export BUILDPACK_PATH=$BP_DIR
-source $BP_DIR/compile-extensions/lib/common
-# END CF Common
 LOG_FILE='/tmp/node-build-log.txt'
 echo "" > "$LOG_FILE"
 
@@ -37,7 +35,6 @@ source $BP_DIR/lib/environment.sh
 source $BP_DIR/lib/binaries.sh
 source $BP_DIR/lib/cache.sh
 source $BP_DIR/lib/dependencies.sh
-source $BP_DIR/lib/vendor/new_relic/install.sh $BUILD_DIR
 
 ### Handle errors
 
@@ -65,6 +62,7 @@ warn_missing_package_json "$BUILD_DIR"
 
 create_env() {
   write_profile "$BP_DIR" "$BUILD_DIR"
+  write_export "$BP_DIR" "$BUILD_DIR"
   export_env_dir "$ENV_DIR"
   create_default_env
 }
@@ -122,12 +120,14 @@ header "Restoring cache"
 restore_cache | output "$LOG_FILE"
 
 build_dependencies() {
+  run_if_present 'heroku-prebuild'
   if $PREBUILD; then
     echo "Prebuild detected (node_modules already exists)"
     rebuild_node_modules "$BUILD_DIR"
   else
     install_node_modules "$BUILD_DIR"
   fi
+  run_if_present 'heroku-postbuild'
 }
 
 header "Building dependencies"
