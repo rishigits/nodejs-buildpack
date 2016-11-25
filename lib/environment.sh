@@ -1,7 +1,7 @@
 create_default_env() {
   export NPM_CONFIG_PRODUCTION=${NPM_CONFIG_PRODUCTION:-true}
   export NPM_CONFIG_LOGLEVEL=${NPM_CONFIG_LOGLEVEL:-verbose}
-  export NODE_MODULES_CACHE=${NODE_MODULES_CACHE:-true}
+  export NODE_MODULES_CACHE=${NODE_MODULES_CACHE:-false}
   export NODE_ENV=${NODE_ENV:-production}
 }
 
